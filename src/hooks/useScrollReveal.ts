@@ -15,31 +15,43 @@ const useScrollReveal = (
     const element = ref.current
     if (!element) return
 
+    let revealTimeout: number | undefined
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             if (delay) {
-              setTimeout(() => setIsVisible(true), delay)
+              revealTimeout = window.setTimeout(() => setIsVisible(true), delay)
             } else {
               setIsVisible(true)
             }
+
             if (once) {
               observer.unobserve(entry.target)
             }
-          } else if (!once) {
+            return
+          }
+
+          if (!once) {
             setIsVisible(false)
           }
         })
       },
       {
-        threshold: 0.2,
+        threshold: 0.18,
+        rootMargin: '0px 0px -8% 0px',
       },
     )
 
     observer.observe(element)
 
-    return () => observer.disconnect()
+    return () => {
+      if (revealTimeout) {
+        window.clearTimeout(revealTimeout)
+      }
+      observer.disconnect()
+    }
   }, [ref, delay, once])
 
   return isVisible

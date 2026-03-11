@@ -23,30 +23,21 @@ const useSystemScrollAnimations = () => {
             x: 0,
             y: 0,
             rotate: 0,
-            duration: 1,
+            duration: 0.7,
             ease: 'power3.out',
             scrollTrigger: {
               trigger: section,
-              start: 'top 82%',
-              end: 'bottom top',
+              start: 'top 85%',
+              end: 'bottom 15%',
+              toggleActions: 'play reverse play reverse',
+              invalidateOnRefresh: true,
               onEnter: () => section.classList.add('module-active'),
+              onEnterBack: () => section.classList.add('module-active'),
+              onLeave: () => section.classList.remove('module-active'),
               onLeaveBack: () => section.classList.remove('module-active'),
             },
           },
         )
-
-        gsap.to(section, {
-          autoAlpha: 0.25,
-          y: dir === 2 ? -30 : 30,
-          rotate: dir === 1 ? -2 : 2,
-          ease: 'power1.in',
-          scrollTrigger: {
-            trigger: section,
-            start: 'bottom 20%',
-            end: 'bottom -10%',
-            scrub: true,
-          },
-        })
       })
 
       cards.forEach((card, index) => {

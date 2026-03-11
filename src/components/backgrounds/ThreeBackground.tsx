@@ -20,10 +20,11 @@ const ThreeBackground: React.FC = () => {
     camera.position.z = 9
 
     const renderer = new THREE.WebGLRenderer({
-      antialias: true,
+      antialias: false,
       alpha: true,
+      powerPreference: 'low-power',
     })
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(0x000000, 0)
     container.appendChild(renderer.domElement)
@@ -33,10 +34,10 @@ const ThreeBackground: React.FC = () => {
     const group = new THREE.Group()
     scene.add(group)
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.3)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.24)
     scene.add(ambientLight)
 
-    const pointLight = new THREE.PointLight(0x38a6ff, 0.9, 25)
+    const pointLight = new THREE.PointLight(0x38a6ff, 0.7, 24)
     pointLight.position.set(3.5, 3.5, 8)
     scene.add(pointLight)
 
@@ -44,7 +45,8 @@ const ThreeBackground: React.FC = () => {
     const radius = Math.max(5.5, 3.5 * aspect)
 
     const particleGeometry = new THREE.BufferGeometry()
-    const PARTICLE_COUNT = 350
+    const memoryBudget = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4
+    const PARTICLE_COUNT = memoryBudget <= 4 ? 130 : 190
     const positions = new Float32Array(PARTICLE_COUNT * 3)
     const particleBase: THREE.Vector3[] = []
 
@@ -68,48 +70,46 @@ const ThreeBackground: React.FC = () => {
       color: 0x6ad8ff,
       size: 0.04,
       transparent: true,
-      opacity: 0.2, // significantly reduced for subtlety
+      opacity: 0.16,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
     })
 
     const particles = new THREE.Points(particleGeometry, particleMaterial)
     scene.add(particles)
-    
-    // High Tech Neural Network Lines
+
     const linesGeometry = new THREE.BufferGeometry()
-    const MAX_LINES = 1500
+    const MAX_LINES = memoryBudget <= 4 ? 220 : 360
     const linePositions = new Float32Array(MAX_LINES * 6)
     linesGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3))
     linesGeometry.setDrawRange(0, 0)
-    
+
     const linesMaterial = new THREE.LineBasicMaterial({
       color: 0x38a6ff,
       transparent: true,
-      opacity: 0.04, // highly reduced
+      opacity: 0.04,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     })
     const linesMesh = new THREE.LineSegments(linesGeometry, linesMaterial)
     scene.add(linesMesh)
 
-    // Helper to sync theme colors
     const syncThemeColors = () => {
       const rootStyle = getComputedStyle(document.documentElement)
       const primaryStr = rootStyle.getPropertyValue('--primary-color').trim() || '#8dff69'
       primaryColor.set(primaryStr)
-      
+
       pointLight.color.copy(primaryColor)
       particleMaterial.color.copy(primaryColor).lerp(new THREE.Color(0xffffff), 0.2)
       linesMaterial.color.copy(primaryColor)
-      
+
       const isLight = document.documentElement.getAttribute('data-theme') === 'light'
       if (isLight) {
-        linesMaterial.opacity = 0.08 // better visibility on light background but still subtle
-        particleMaterial.opacity = 0.35
+        linesMaterial.opacity = 0.07
+        particleMaterial.opacity = 0.28
       } else {
         linesMaterial.opacity = 0.04
-        particleMaterial.opacity = 0.2
+        particleMaterial.opacity = 0.16
       }
     }
 
@@ -131,6 +131,11 @@ const ThreeBackground: React.FC = () => {
     const targetRotation = { x: -0.18, y: 0.18 }
 
     const animate = () => {
+      if (document.visibilityState === 'hidden') {
+        frameId = requestAnimationFrame(animate)
+        return
+      }
+
       const elapsed = clock.getElapsedTime()
 
       targetRotation.x = -0.2 + mouse.y * 0.25
@@ -153,43 +158,48 @@ const ThreeBackground: React.FC = () => {
         const dist = Math.sqrt(dx * dx + dy * dy)
         const falloff = THREE.MathUtils.clamp(1.4 - dist * 1.8, 0, 1)
 
-        const attract = 0.25 * falloff
-        px += (-dx * attract)
-        py += (-dy * attract * 0.7)
+        const attract = 0.2 * falloff
+        px += -dx * attract
+        py += -dy * attract * 0.7
 
-        px += Math.sin(elapsed * 1.1 + i * 0.3) * 0.03
-        py += Math.cos(elapsed * 1.0 + i * 0.2) * 0.03
+        px += Math.sin(elapsed * 1.1 + i * 0.3) * 0.02
+        py += Math.cos(elapsed * 1.0 + i * 0.2) * 0.02
 
         positionsAttr.setXYZ(i, px, py, base.z)
       }
       positionsAttr.needsUpdate = true
 
-      // Update Neural Network connections
       let lineIndex = 0
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
+      const linesPos = linesGeometry.attributes.position as THREE.BufferAttribute
+
+      for (let i = 0; i < PARTICLE_COUNT; i += 1) {
+        if (lineIndex >= MAX_LINES) break
+
         const p1x = positionsAttr.getX(i)
         const p1y = positionsAttr.getY(i)
         const p1z = positionsAttr.getZ(i)
-        
-        for (let j = i + 1; j < PARTICLE_COUNT; j++) {
+
+        for (let j = i + 1; j < Math.min(i + 14, PARTICLE_COUNT); j += 1) {
+          if (lineIndex >= MAX_LINES) break
+
           const p2x = positionsAttr.getX(j)
           const p2y = positionsAttr.getY(j)
           const p2z = positionsAttr.getZ(j)
-          
+
           const distSq = (p1x - p2x) ** 2 + (p1y - p2y) ** 2 + (p1z - p2z) ** 2
-          if (distSq < 2.0 && lineIndex < MAX_LINES) {
-            const linesPos = linesGeometry.attributes.position as THREE.BufferAttribute
+          if (distSq < 1.6) {
             linesPos.setXYZ(lineIndex * 2, p1x, p1y, p1z)
             linesPos.setXYZ(lineIndex * 2 + 1, p2x, p2y, p2z)
-            lineIndex++
+            lineIndex += 1
           }
         }
       }
-      linesGeometry.setDrawRange(0, lineIndex * 2)
-      ;(linesGeometry.attributes.position as THREE.BufferAttribute).needsUpdate = true
 
-      pointLight.position.x = 4 + mouse.x * 2.4
-      pointLight.position.y = 3 + mouse.y * 1.8
+      linesGeometry.setDrawRange(0, lineIndex * 2)
+      linesPos.needsUpdate = true
+
+      pointLight.position.x = 4 + mouse.x * 2.2
+      pointLight.position.y = 3 + mouse.y * 1.6
 
       renderer.render(scene, camera)
       frameId = requestAnimationFrame(animate)
@@ -202,6 +212,7 @@ const ThreeBackground: React.FC = () => {
       const height = window.innerHeight
       camera.aspect = width / height
       camera.updateProjectionMatrix()
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
       renderer.setSize(width, height)
     }
 
@@ -213,7 +224,7 @@ const ThreeBackground: React.FC = () => {
     }
 
     window.addEventListener('resize', handleResize)
-    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointermove', handlePointerMove, { passive: true })
 
     return () => {
       cancelAnimationFrame(frameId)
@@ -241,4 +252,3 @@ const ThreeBackground: React.FC = () => {
 }
 
 export default ThreeBackground
-
