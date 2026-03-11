@@ -1,7 +1,25 @@
 import type React from 'react'
+import { useRef, useState } from 'react'
 import { ArrowRight, Github, Linkedin, Radar } from 'lucide-react'
 
 const Hero: React.FC = () => {
+  const panelRef = useRef<HTMLDivElement | null>(null)
+  const [tilt, setTilt] = useState({ x: 0, y: 0 })
+
+  const handleMove: React.PointerEventHandler<HTMLDivElement> = (event) => {
+    const panel = panelRef.current
+    if (!panel) return
+
+    const bounds = panel.getBoundingClientRect()
+    const px = (event.clientX - bounds.left) / bounds.width
+    const py = (event.clientY - bounds.top) / bounds.height
+
+    setTilt({
+      x: (0.5 - py) * 8,
+      y: (px - 0.5) * 9,
+    })
+  }
+
   return (
     <div className="grid items-center gap-10 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
       <div className="space-y-6">
@@ -40,7 +58,7 @@ const Hero: React.FC = () => {
             ['15+', 'Mission-ready product deployments'],
             ['24/7', 'Design + Engineering integration'],
           ].map(([stat, label]) => (
-            <div key={stat} className="cockpit-panel rounded-xl p-3 scanlines">
+            <div key={stat} className="cockpit-panel holo-card rounded-xl p-3 scanlines">
               <p className="font-tech text-lg text-[--color-primary]">{stat}</p>
               <p className="text-[10px] uppercase tracking-[0.15em] text-foreground/60">{label}</p>
             </div>
@@ -48,7 +66,13 @@ const Hero: React.FC = () => {
         </div>
       </div>
 
-      <div className="cockpit-panel relative rounded-[30px] p-5">
+      <div
+        ref={panelRef}
+        onPointerMove={handleMove}
+        onPointerLeave={() => setTilt({ x: 0, y: 0 })}
+        className="cockpit-panel holo-card relative rounded-[30px] p-5 transition-transform duration-400"
+        style={{ transform: `perspective(1100px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` }}
+      >
         <div className="absolute -left-6 -top-6 h-16 w-16 rounded-full border border-[--secondary-color]/40" />
         <div className="scanlines relative overflow-hidden rounded-2xl border border-white/10 bg-black/40 p-6">
           <div className="mb-6 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-foreground/50">

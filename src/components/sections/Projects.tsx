@@ -18,7 +18,7 @@ const Projects: React.FC = () => {
           <ScrollReveal
             key={project.id}
             delay={index * 120}
-            className="cockpit-panel group flex flex-col overflow-hidden rounded-2xl transition hover:shadow-[0_0_35px_rgba(151,71,255,0.28)]"
+            className="cockpit-panel holo-card group flex flex-col overflow-hidden rounded-2xl transition hover:shadow-[0_0_35px_rgba(151,71,255,0.28)]"
           >
             <div className="relative h-44 w-full overflow-hidden bg-background/60">
               <img
