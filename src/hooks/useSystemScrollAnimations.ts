@@ -10,22 +10,43 @@ const useSystemScrollAnimations = () => {
     const cards = gsap.utils.toArray<HTMLElement>('.holo-card')
 
     const ctx = gsap.context(() => {
-      sections.forEach((section) => {
+      sections.forEach((section, index) => {
+        const dir = index % 3
+        const from =
+          dir === 0 ? { x: -70, rotate: -2 } : dir === 1 ? { x: 70, rotate: 1.8 } : { y: 70, rotate: 1.4 }
+
         gsap.fromTo(
           section,
-          { autoAlpha: 0, y: 36 },
+          { autoAlpha: 0, ...from },
           {
             autoAlpha: 1,
+            x: 0,
             y: 0,
-            duration: 0.9,
+            rotate: 0,
+            duration: 1,
             ease: 'power3.out',
             scrollTrigger: {
               trigger: section,
               start: 'top 82%',
-              once: true,
+              end: 'bottom top',
+              onEnter: () => section.classList.add('module-active'),
+              onLeaveBack: () => section.classList.remove('module-active'),
             },
           },
         )
+
+        gsap.to(section, {
+          autoAlpha: 0.25,
+          y: dir === 2 ? -30 : 30,
+          rotate: dir === 1 ? -2 : 2,
+          ease: 'power1.in',
+          scrollTrigger: {
+            trigger: section,
+            start: 'bottom 20%',
+            end: 'bottom -10%',
+            scrub: true,
+          },
+        })
       })
 
       cards.forEach((card, index) => {
@@ -38,10 +59,7 @@ const useSystemScrollAnimations = () => {
             duration: 0.7,
             delay: (index % 4) * 0.08,
             ease: 'power2.out',
-            scrollTrigger: {
-              trigger: card,
-              start: 'top 88%',
-            },
+            scrollTrigger: { trigger: card, start: 'top 88%' },
           },
         )
       })

@@ -28,7 +28,7 @@ const ThreeBackground: React.FC = () => {
     renderer.setClearColor(0x000000, 0)
     container.appendChild(renderer.domElement)
 
-    let primaryColor = new THREE.Color()
+    const primaryColor = new THREE.Color()
 
     const group = new THREE.Group()
     scene.add(group)
