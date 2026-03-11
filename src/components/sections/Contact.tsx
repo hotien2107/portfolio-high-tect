@@ -17,11 +17,11 @@ const Contact: React.FC = () => {
           <form className="space-y-4 text-sm" onSubmit={(e) => e.preventDefault()}>
             <p className="terminal-reveal font-tech text-xs tracking-[0.18em] text-[--color-primary]">// uplink.form :: secure_channel.active</p>
             <div className="grid gap-4 md:grid-cols-2">
-              <input id="name" name="name" className="rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-xs text-foreground outline-none transition focus:border-[--color-primary]" placeholder="NAME" />
-              <input id="email" name="email" type="email" className="rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-xs text-foreground outline-none transition focus:border-[--color-primary]" placeholder="EMAIL" />
+              <input id="name" name="name" className="input-surface rounded-lg px-3 py-2 text-xs outline-none transition focus:border-[--color-primary]" placeholder="NAME" />
+              <input id="email" name="email" type="email" className="input-surface rounded-lg px-3 py-2 text-xs outline-none transition focus:border-[--color-primary]" placeholder="EMAIL" />
             </div>
-            <input id="topic" name="topic" className="w-full rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-xs text-foreground outline-none transition focus:border-[--secondary-color]" placeholder="MISSION SUBJECT" />
-            <textarea id="message" name="message" rows={4} className="w-full resize-none rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-xs text-foreground outline-none transition focus:border-[--secondary-color]" placeholder="TRANSMISSION PAYLOAD..." />
+            <input id="topic" name="topic" className="input-surface w-full rounded-lg px-3 py-2 text-xs outline-none transition focus:border-[--secondary-color]" placeholder="MISSION SUBJECT" />
+            <textarea id="message" name="message" rows={4} className="input-surface w-full resize-none rounded-lg px-3 py-2 text-xs outline-none transition focus:border-[--secondary-color]" placeholder="TRANSMISSION PAYLOAD..." />
 
             <button type="submit" className="inline-flex items-center justify-center rounded-full border border-[--color-primary]/70 bg-[--color-primary]/10 px-6 py-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-[--color-primary] shadow-[0_0_24px_rgba(40,216,255,0.34)] transition hover:bg-[--color-primary]/20 hover:shadow-[0_0_34px_rgba(40,216,255,0.55)]">
               Send Signal
@@ -37,7 +37,7 @@ const Contact: React.FC = () => {
               <p><span className="text-foreground/45">Location:</span> Ho Chi Minh City, Vietnam</p>
               <p><span className="text-foreground/45">Preferred Channel:</span> email / product collab</p>
             </div>
-            <div className="mt-6 h-1.5 overflow-hidden rounded-full bg-white/10">
+            <div className="mt-6 h-1.5 overflow-hidden rounded-full bg-[color:color-mix(in_oklab,var(--text-color)_14%,transparent)]">
               <div className="h-full w-4/5 rounded-full bg-gradient-to-r from-[--color-primary] to-[--secondary-color]" />
             </div>
           </div>

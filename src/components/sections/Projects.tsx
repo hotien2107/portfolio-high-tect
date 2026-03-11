@@ -26,8 +26,8 @@ const Projects: React.FC = () => {
                 alt={project.name}
                 className="h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-[1.05]"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#060b17] via-[#060b1710] to-transparent" />
-              <span className="hud-label absolute left-4 top-4 rounded-full border border-white/20 bg-black/45 px-2 py-1">
+              <div className="absolute inset-0 bg-gradient-to-t from-[var(--image-overlay-start)] via-[var(--image-overlay-mid)] to-transparent" />
+              <span className="hud-label absolute left-4 top-4 rounded-full border border-[color:color-mix(in_oklab,var(--text-color)_16%,transparent)] bg-[var(--hud-surface)] px-2 py-1">
                 MODULE_{project.id}
               </span>
             </div>

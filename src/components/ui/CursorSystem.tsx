@@ -109,7 +109,7 @@ const CursorSystem = () => {
 
   if (!enabled)
     return (
-      <button onClick={() => setEnabled(true)} className="fixed bottom-5 right-5 z-50 rounded-xl border border-white/20 bg-black/40 px-3 py-2 text-xs uppercase tracking-[0.16em]">
+      <button onClick={() => setEnabled(true)} className="fixed bottom-5 right-5 z-50 rounded-xl border border-[color:color-mix(in_oklab,var(--text-color)_18%,transparent)] bg-[var(--hud-surface)] px-3 py-2 text-xs uppercase tracking-[0.16em]">
         Enable Cursor
       </button>
     )
@@ -121,7 +121,7 @@ const CursorSystem = () => {
 
       <div className="cockpit-panel fixed bottom-5 right-5 z-50 hidden w-64 rounded-2xl p-3 md:block">
         <div className="mb-2 flex items-center justify-between"><p className="hud-label">Cursor Control</p><button onClick={() => setPanelOpen((p) => !p)} className="text-xs uppercase tracking-[0.14em] text-[--color-primary]">{panelOpen ? 'Hide' : 'Show'}</button></div>
-        {panelOpen && <div className="space-y-2">{modes.map((item) => { const Icon = item.icon; return <button key={item.id} onClick={() => setMode(item.id)} className={`flex w-full items-center justify-between rounded-lg border px-2 py-1.5 text-xs ${mode === item.id ? 'border-[--color-primary] bg-[--color-primary]/20' : 'border-white/15 hover:border-[--color-primary]/55'}`}><span>{item.label}</span><Icon className="h-4 w-4" /></button> })}<div className="flex gap-2"><button onClick={() => setEnabled(false)} className="flex-1 rounded-lg border border-white/20 px-2 py-1 text-[10px] uppercase">Toggle</button><button onClick={() => setMode('aurora')} className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-white/20 px-2 py-1 text-[10px] uppercase"><Undo2 className="h-3 w-3" />Reset</button></div></div>}
+        {panelOpen && <div className="space-y-2">{modes.map((item) => { const Icon = item.icon; return <button key={item.id} onClick={() => setMode(item.id)} className={`flex w-full items-center justify-between rounded-lg border px-2 py-1.5 text-xs ${mode === item.id ? 'border-[--color-primary] bg-[--color-primary]/20' : 'border-[color:color-mix(in_oklab,var(--text-color)_16%,transparent)] hover:border-[--color-primary]/55'}`}><span>{item.label}</span><Icon className="h-4 w-4" /></button> })}<div className="flex gap-2"><button onClick={() => setEnabled(false)} className="flex-1 rounded-lg border border-[color:color-mix(in_oklab,var(--text-color)_18%,transparent)] px-2 py-1 text-[10px] uppercase">Toggle</button><button onClick={() => setMode('aurora')} className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-[color:color-mix(in_oklab,var(--text-color)_18%,transparent)] px-2 py-1 text-[10px] uppercase"><Undo2 className="h-3 w-3" />Reset</button></div></div>}
       </div>
     </>
   )
