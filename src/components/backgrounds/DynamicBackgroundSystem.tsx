@@ -18,31 +18,42 @@ const DynamicBackgroundSystem = () => {
   const meteorLayerRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    let raf = 0
+    let scrollRaf = 0
+    let pointerRaf = 0
     const root = document.documentElement
+    const pointer = { x: 50, y: 50 }
 
     const updateScroll = () => {
       const maxScroll = Math.max(document.body.scrollHeight - window.innerHeight, 1)
       root.style.setProperty('--parallax-scroll', (window.scrollY / maxScroll).toFixed(4))
-      raf = 0
+      scrollRaf = 0
     }
 
     const onScroll = () => {
-      if (raf) return
-      raf = requestAnimationFrame(updateScroll)
+      if (scrollRaf) return
+      scrollRaf = requestAnimationFrame(updateScroll)
+    }
+
+    const flushPointer = () => {
+      root.style.setProperty('--cursor-x', pointer.x.toFixed(2))
+      root.style.setProperty('--cursor-y', pointer.y.toFixed(2))
+      pointerRaf = 0
     }
 
     const onPointerMove = (event: PointerEvent) => {
-      root.style.setProperty('--cursor-x', ((event.clientX / window.innerWidth) * 100).toFixed(2))
-      root.style.setProperty('--cursor-y', ((event.clientY / window.innerHeight) * 100).toFixed(2))
+      pointer.x = (event.clientX / window.innerWidth) * 100
+      pointer.y = (event.clientY / window.innerHeight) * 100
+      if (pointerRaf) return
+      pointerRaf = requestAnimationFrame(flushPointer)
     }
 
     updateScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointermove', onPointerMove, { passive: true })
 
     return () => {
-      if (raf) cancelAnimationFrame(raf)
+      if (scrollRaf) cancelAnimationFrame(scrollRaf)
+      if (pointerRaf) cancelAnimationFrame(pointerRaf)
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('pointermove', onPointerMove)
     }
@@ -54,20 +65,25 @@ const DynamicBackgroundSystem = () => {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const stars = Array.from({ length: 1000 }, () => ({
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const memoryBudget = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4
+    const baseCount = prefersReducedMotion ? 80 : memoryBudget <= 4 ? 180 : 320
+
+    const stars = Array.from({ length: baseCount }, () => ({
       x: Math.random(),
       y: Math.random(),
-      r: random(0.2, 1.4),
-      alpha: random(0.2, 0.9),
-      velocity: random(0.002, 0.012),
+      r: random(0.2, 1.2),
+      alpha: random(0.25, 0.9),
+      velocity: random(0.002, 0.008),
     }))
 
     const resize = () => {
-      canvas.width = window.innerWidth * devicePixelRatio
-      canvas.height = window.innerHeight * devicePixelRatio
+      const dpr = Math.min(window.devicePixelRatio, 1.5)
+      canvas.width = window.innerWidth * dpr
+      canvas.height = window.innerHeight * dpr
       canvas.style.width = `${window.innerWidth}px`
       canvas.style.height = `${window.innerHeight}px`
-      ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0)
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     }
 
     resize()
@@ -77,8 +93,14 @@ const DynamicBackgroundSystem = () => {
     let animationId = 0
 
     const draw = () => {
+      if (document.visibilityState === 'hidden') {
+        animationId = requestAnimationFrame(draw)
+        return
+      }
+
       frame += 1
       ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
+
       for (const star of stars) {
         star.alpha += Math.sin(frame * star.velocity) * 0.003
         star.alpha = Math.min(1, Math.max(0.1, star.alpha))
@@ -87,6 +109,7 @@ const DynamicBackgroundSystem = () => {
         ctx.arc(star.x * window.innerWidth, star.y * window.innerHeight, star.r, 0, Math.PI * 2)
         ctx.fill()
       }
+
       animationId = requestAnimationFrame(draw)
     }
 
@@ -110,9 +133,9 @@ const DynamicBackgroundSystem = () => {
         id: meteorId++,
         x: random(-10, 70),
         y: random(-20, 40),
-        size: large ? random(200, 360) : random(80, 180),
+        size: large ? random(180, 280) : random(70, 150),
         angle: random(14, 25),
-        duration: large ? random(9000, 13000) : random(1500, 3000),
+        duration: large ? random(9000, 12000) : random(1600, 3200),
         delay: 0,
         large,
       }
@@ -135,17 +158,17 @@ const DynamicBackgroundSystem = () => {
     const queueMeteor = () => {
       if (disposed) return
       spawnMeteor(false)
-      window.setTimeout(queueMeteor, random(1500, 5200))
+      window.setTimeout(queueMeteor, random(2600, 6200))
     }
 
     const queueComet = () => {
       if (disposed) return
       spawnMeteor(true)
-      cometTimeout = window.setTimeout(queueComet, random(26000, 46000))
+      cometTimeout = window.setTimeout(queueComet, random(30000, 52000))
     }
 
     const timer = window.setTimeout(queueMeteor, 1200)
-    cometTimeout = window.setTimeout(queueComet, random(12000, 24000))
+    cometTimeout = window.setTimeout(queueComet, random(15000, 26000))
 
     return () => {
       disposed = true
@@ -156,14 +179,14 @@ const DynamicBackgroundSystem = () => {
 
   return (
     <>
-      <canvas ref={starCanvasRef} aria-hidden="true" className="pointer-events-none fixed inset-0 z-[1] opacity-70" />
+      <canvas ref={starCanvasRef} aria-hidden="true" className="pointer-events-none fixed inset-0 z-[1] opacity-60" />
 
       <div aria-hidden="true" className="aurora-layer pointer-events-none fixed inset-0 z-[1]" />
       <div aria-hidden="true" className="holographic-particles pointer-events-none fixed inset-0 z-[1]" />
       <div ref={meteorLayerRef} aria-hidden="true" className="pointer-events-none fixed inset-0 z-[2] overflow-hidden" />
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-[1] opacity-45"
+        className="pointer-events-none fixed inset-0 z-[1] opacity-35"
         style={{
           transform: 'translate3d(calc((var(--cursor-x) - 50) * 0.12px), calc((var(--cursor-y) - 50) * 0.15px), 0)',
           background: 'radial-gradient(520px circle at calc(var(--cursor-x) * 1%) calc(var(--cursor-y) * 1%), rgba(76,233,255,0.14), transparent 70%)',

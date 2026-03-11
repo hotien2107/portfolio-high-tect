@@ -1,4 +1,4 @@
-import { type ComponentType, useEffect, useMemo, useState } from 'react'
+import { type ComponentType, useEffect, useMemo, useRef, useState } from 'react'
 import { CircleDot, Hand, LocateFixed, Rocket, Sparkles, Undo2, Wand2 } from 'lucide-react'
 
 type CursorMode = 'aurora' | 'rocket' | 'energy' | 'gesture' | 'dot' | 'comet'
@@ -14,11 +14,21 @@ const modes: { id: CursorMode; label: string; icon: ComponentType<{ className?: 
 ]
 
 const CursorSystem = () => {
+  const shouldDisableHeavyCursor = useMemo(
+    () => window.matchMedia('(pointer: coarse), (prefers-reduced-motion: reduce)').matches,
+    [],
+  )
+
   const [mode, setMode] = useState<CursorMode>('aurora')
-  const [enabled, setEnabled] = useState(true)
+  const [enabled, setEnabled] = useState(!shouldDisableHeavyCursor)
   const [panelOpen, setPanelOpen] = useState(false)
   const [position, setPosition] = useState({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
   const [trail, setTrail] = useState<TrailPoint[]>([])
+
+  const positionRef = useRef(position)
+  const trailRef = useRef<TrailPoint[]>([])
+  const rafRef = useRef<number | null>(null)
+  const activeMagneticRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     document.body.classList.toggle('cursor-hidden', enabled)
@@ -26,35 +36,74 @@ const CursorSystem = () => {
   }, [enabled])
 
   useEffect(() => {
+    if (!enabled) return
+
     const onMove = (event: PointerEvent) => {
-      setPosition({ x: event.clientX, y: event.clientY })
-      setTrail((prev) => [{ x: event.clientX, y: event.clientY, life: 1 }, ...prev].slice(0, 14))
+      positionRef.current = { x: event.clientX, y: event.clientY }
+      trailRef.current = [{ x: event.clientX, y: event.clientY, life: 1 }, ...trailRef.current].slice(0, 8)
 
-      const magneticEl = (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-magnetic]')
-      document.querySelectorAll<HTMLElement>('[data-magnetic]').forEach((el) => {
-        if (el !== magneticEl) el.style.transform = ''
-      })
+      const magneticEl = (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-magnetic]') ?? null
+      if (activeMagneticRef.current && activeMagneticRef.current !== magneticEl) {
+        activeMagneticRef.current.style.transform = ''
+      }
 
+      activeMagneticRef.current = magneticEl
       if (magneticEl) {
         const bounds = magneticEl.getBoundingClientRect()
         magneticEl.style.transform = `translate3d(${(event.clientX - (bounds.left + bounds.width / 2)) * 0.08}px, ${(event.clientY - (bounds.top + bounds.height / 2)) * 0.08}px, 0)`
       }
+
+      if (rafRef.current) return
+      rafRef.current = window.requestAnimationFrame(() => {
+        setPosition(positionRef.current)
+        setTrail(trailRef.current)
+        rafRef.current = null
+      })
     }
 
-    window.addEventListener('pointermove', onMove)
-    return () => window.removeEventListener('pointermove', onMove)
-  }, [])
+    window.addEventListener('pointermove', onMove, { passive: true })
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      if (activeMagneticRef.current) {
+        activeMagneticRef.current.style.transform = ''
+      }
+      if (rafRef.current) {
+        window.cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
+      }
+    }
+  }, [enabled])
 
   useEffect(() => {
-    const timer = window.setInterval(() => {
-      setTrail((prev) => prev.map((t) => ({ ...t, life: t.life - 0.08 })).filter((t) => t.life > 0))
-    }, 24)
-    return () => window.clearInterval(timer)
-  }, [])
+    if (!enabled) return
+
+    let frameId = 0
+    let lastFrame = performance.now()
+
+    const decay = (time: number) => {
+      const delta = Math.min((time - lastFrame) / 16.6, 2)
+      lastFrame = time
+
+      trailRef.current = trailRef.current
+        .map((point) => ({ ...point, life: point.life - 0.07 * delta }))
+        .filter((point) => point.life > 0)
+
+      setTrail(trailRef.current)
+      frameId = window.requestAnimationFrame(decay)
+    }
+
+    frameId = window.requestAnimationFrame(decay)
+    return () => window.cancelAnimationFrame(frameId)
+  }, [enabled])
 
   const ActiveIcon = useMemo(() => modes.find((item) => item.id === mode)?.icon ?? Sparkles, [mode])
 
-  if (!enabled) return <button onClick={() => setEnabled(true)} className="fixed bottom-5 right-5 z-50 rounded-xl border border-white/20 bg-black/40 px-3 py-2 text-xs uppercase tracking-[0.16em]">Enable Cursor</button>
+  if (!enabled)
+    return (
+      <button onClick={() => setEnabled(true)} className="fixed bottom-5 right-5 z-50 rounded-xl border border-white/20 bg-black/40 px-3 py-2 text-xs uppercase tracking-[0.16em]">
+        Enable Cursor
+      </button>
+    )
 
   return (
     <>
