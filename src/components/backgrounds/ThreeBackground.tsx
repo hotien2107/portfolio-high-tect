@@ -1,14 +1,18 @@
 import type React from 'react'
 import { useEffect, useRef } from 'react'
+import useDeviceProfile from '../../hooks/useDeviceProfile'
 import * as THREE from 'three'
 import RadialGradientBackground from './RadialGradientBackground'
 
 const ThreeBackground: React.FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const { tier, isTouch, reducedMotion, animationScale, lowPowerMode } = useDeviceProfile()
 
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
+
+    if (tier === 'mobile' || reducedMotion) return
 
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(
@@ -24,7 +28,7 @@ const ThreeBackground: React.FC = () => {
       alpha: true,
       powerPreference: 'low-power',
     })
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, lowPowerMode ? 1.1 : 1.4))
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(0x000000, 0)
     container.appendChild(renderer.domElement)
@@ -46,7 +50,7 @@ const ThreeBackground: React.FC = () => {
 
     const particleGeometry = new THREE.BufferGeometry()
     const memoryBudget = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4
-    const PARTICLE_COUNT = memoryBudget <= 4 ? 130 : 190
+    const PARTICLE_COUNT = tier === 'tablet' ? 110 : memoryBudget <= 4 ? 120 : 170
     const positions = new Float32Array(PARTICLE_COUNT * 3)
     const particleBase: THREE.Vector3[] = []
 
@@ -79,7 +83,7 @@ const ThreeBackground: React.FC = () => {
     scene.add(particles)
 
     const linesGeometry = new THREE.BufferGeometry()
-    const MAX_LINES = memoryBudget <= 4 ? 220 : 360
+    const MAX_LINES = tier === 'tablet' ? 160 : memoryBudget <= 4 ? 200 : 280
     const linePositions = new Float32Array(MAX_LINES * 6)
     linesGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3))
     linesGeometry.setDrawRange(0, 0)
@@ -141,8 +145,8 @@ const ThreeBackground: React.FC = () => {
       targetRotation.x = -0.2 + mouse.y * 0.25
       targetRotation.y = 0.25 + mouse.x * 0.4
 
-      group.rotation.x += (targetRotation.x - group.rotation.x) * 0.06
-      group.rotation.y += (targetRotation.y - group.rotation.y) * 0.08
+      group.rotation.x += (targetRotation.x - group.rotation.x) * (tier === 'desktop' ? 0.06 : 0.035)
+      group.rotation.y += (targetRotation.y - group.rotation.y) * (tier === 'desktop' ? 0.08 : 0.05)
 
       const positionsAttr = particleGeometry.attributes.position as THREE.BufferAttribute
       for (let i = 0; i < PARTICLE_COUNT; i += 1) {
@@ -162,8 +166,8 @@ const ThreeBackground: React.FC = () => {
         px += -dx * attract
         py += -dy * attract * 0.7
 
-        px += Math.sin(elapsed * 1.1 + i * 0.3) * 0.02
-        py += Math.cos(elapsed * 1.0 + i * 0.2) * 0.02
+        px += Math.sin(elapsed * (0.7 + animationScale * 0.5) + i * 0.3) * 0.02
+        py += Math.cos(elapsed * (0.7 + animationScale * 0.4) + i * 0.2) * 0.02
 
         positionsAttr.setXYZ(i, px, py, base.z)
       }
@@ -212,7 +216,7 @@ const ThreeBackground: React.FC = () => {
       const height = window.innerHeight
       camera.aspect = width / height
       camera.updateProjectionMatrix()
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, lowPowerMode ? 1.1 : 1.4))
       renderer.setSize(width, height)
     }
 
@@ -224,7 +228,9 @@ const ThreeBackground: React.FC = () => {
     }
 
     window.addEventListener('resize', handleResize)
-    window.addEventListener('pointermove', handlePointerMove, { passive: true })
+    if (!isTouch) {
+      window.addEventListener('pointermove', handlePointerMove, { passive: true })
+    }
 
     return () => {
       cancelAnimationFrame(frameId)
@@ -238,7 +244,7 @@ const ThreeBackground: React.FC = () => {
       linesGeometry.dispose()
       linesMaterial.dispose()
     }
-  }, [])
+  }, [animationScale, isTouch, lowPowerMode, reducedMotion, tier])
 
   return (
     <div

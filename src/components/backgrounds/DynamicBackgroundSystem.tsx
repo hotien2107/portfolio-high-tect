@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
+import useDeviceProfile from '../../hooks/useDeviceProfile'
 
 type Meteor = {
   id: number
@@ -16,6 +17,8 @@ const random = (min: number, max: number) => Math.random() * (max - min) + min
 const DynamicBackgroundSystem = () => {
   const starCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const meteorLayerRef = useRef<HTMLDivElement | null>(null)
+  const { tier, isTouch, reducedMotion, animationScale } = useDeviceProfile()
+  const parallaxScale = useMemo(() => (tier === 'desktop' ? 1 : tier === 'tablet' ? 0.5 : 0.2), [tier])
 
   useEffect(() => {
     let scrollRaf = 0
@@ -25,7 +28,7 @@ const DynamicBackgroundSystem = () => {
 
     const updateScroll = () => {
       const maxScroll = Math.max(document.body.scrollHeight - window.innerHeight, 1)
-      root.style.setProperty('--parallax-scroll', (window.scrollY / maxScroll).toFixed(4))
+      root.style.setProperty('--parallax-scroll', ((window.scrollY / maxScroll) * parallaxScale).toFixed(4))
       scrollRaf = 0
     }
 
@@ -49,7 +52,9 @@ const DynamicBackgroundSystem = () => {
 
     updateScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('pointermove', onPointerMove, { passive: true })
+    if (!isTouch) {
+      window.addEventListener('pointermove', onPointerMove, { passive: true })
+    }
 
     return () => {
       if (scrollRaf) cancelAnimationFrame(scrollRaf)
@@ -57,7 +62,7 @@ const DynamicBackgroundSystem = () => {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('pointermove', onPointerMove)
     }
-  }, [])
+  }, [isTouch, parallaxScale])
 
   useEffect(() => {
     const canvas = starCanvasRef.current
@@ -65,9 +70,8 @@ const DynamicBackgroundSystem = () => {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const memoryBudget = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4
-    const baseCount = prefersReducedMotion ? 80 : memoryBudget <= 4 ? 180 : 320
+    const baseCount = reducedMotion ? 50 : tier === 'mobile' ? 90 : tier === 'tablet' ? 140 : memoryBudget <= 4 ? 180 : 280
 
     const stars = Array.from({ length: baseCount }, () => ({
       x: Math.random(),
@@ -98,7 +102,7 @@ const DynamicBackgroundSystem = () => {
         return
       }
 
-      frame += 1
+      frame += animationScale
       ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
 
       for (const star of stars) {
@@ -118,11 +122,13 @@ const DynamicBackgroundSystem = () => {
       cancelAnimationFrame(animationId)
       window.removeEventListener('resize', resize)
     }
-  }, [])
+  }, [animationScale, reducedMotion, tier])
 
   useEffect(() => {
     const layer = meteorLayerRef.current
     if (!layer) return
+
+    if (reducedMotion) return
 
     let meteorId = 0
     let disposed = false
@@ -158,16 +164,16 @@ const DynamicBackgroundSystem = () => {
     const queueMeteor = () => {
       if (disposed) return
       spawnMeteor(false)
-      window.setTimeout(queueMeteor, random(2600, 6200))
+      window.setTimeout(queueMeteor, random(tier === 'desktop' ? 2800 : 5200, tier === 'desktop' ? 6400 : 9200))
     }
 
     const queueComet = () => {
       if (disposed) return
       spawnMeteor(true)
-      cometTimeout = window.setTimeout(queueComet, random(30000, 52000))
+      cometTimeout = window.setTimeout(queueComet, random(tier === 'desktop' ? 30000 : 48000, tier === 'desktop' ? 52000 : 78000))
     }
 
-    const timer = window.setTimeout(queueMeteor, 1200)
+    const timer = window.setTimeout(queueMeteor, tier === 'desktop' ? 1200 : 2000)
     cometTimeout = window.setTimeout(queueComet, random(15000, 26000))
 
     return () => {
@@ -175,20 +181,20 @@ const DynamicBackgroundSystem = () => {
       window.clearTimeout(timer)
       if (cometTimeout) window.clearTimeout(cometTimeout)
     }
-  }, [])
+  }, [reducedMotion, tier])
 
   return (
     <>
       <canvas ref={starCanvasRef} aria-hidden="true" className="pointer-events-none fixed inset-0 z-[1] opacity-60" />
 
       <div aria-hidden="true" className="aurora-layer pointer-events-none fixed inset-0 z-[1]" />
-      <div aria-hidden="true" className="holographic-particles pointer-events-none fixed inset-0 z-[1]" />
+      {tier !== 'mobile' && <div aria-hidden="true" className="holographic-particles pointer-events-none fixed inset-0 z-[1]" />}
       <div ref={meteorLayerRef} aria-hidden="true" className="pointer-events-none fixed inset-0 z-[2] overflow-hidden" />
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 z-[1] opacity-35"
         style={{
-          transform: 'translate3d(calc((var(--cursor-x) - 50) * 0.12px), calc((var(--cursor-y) - 50) * 0.15px), 0)',
+          transform: `translate3d(calc((var(--cursor-x) - 50) * ${0.12 * parallaxScale}px), calc((var(--cursor-y) - 50) * ${0.15 * parallaxScale}px), 0)`,
           background: 'radial-gradient(520px circle at calc(var(--cursor-x) * 1%) calc(var(--cursor-y) * 1%), rgba(76,233,255,0.14), transparent 70%)',
         }}
       />
