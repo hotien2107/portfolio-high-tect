@@ -36,7 +36,7 @@ const ThreeBackground: React.FC = () => {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.3)
     scene.add(ambientLight)
 
-    const pointLight = new THREE.PointLight(0x8dff69, 0.9, 25)
+    const pointLight = new THREE.PointLight(0x38a6ff, 0.9, 25)
     pointLight.position.set(3.5, 3.5, 8)
     scene.add(pointLight)
 
@@ -65,7 +65,7 @@ const ThreeBackground: React.FC = () => {
     particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
 
     const particleMaterial = new THREE.PointsMaterial({
-      color: 0xa7ffb5,
+      color: 0x6ad8ff,
       size: 0.04,
       transparent: true,
       opacity: 0.2, // significantly reduced for subtlety
@@ -84,7 +84,7 @@ const ThreeBackground: React.FC = () => {
     linesGeometry.setDrawRange(0, 0)
     
     const linesMaterial = new THREE.LineBasicMaterial({
-      color: 0x8dff69,
+      color: 0x38a6ff,
       transparent: true,
       opacity: 0.04, // highly reduced
       blending: THREE.AdditiveBlending,

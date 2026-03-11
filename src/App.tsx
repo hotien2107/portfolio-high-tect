@@ -19,7 +19,7 @@ import TestimonialsPage from './pages/TestimonialsPage'
 import ContactPage from './pages/ContactPage'
 
 const HomePage = () => (
-  <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-24 px-4 pb-16 pt-24 md:px-8 lg:pt-32">
+  <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-24 px-4 pb-16 pt-32 md:px-8 lg:pt-32">
     <section id="hero">
       <Hero />
     </section>

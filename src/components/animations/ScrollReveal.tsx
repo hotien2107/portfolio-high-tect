@@ -1,10 +1,11 @@
 import type React from 'react'
 import { useEffect, useRef } from 'react'
+import type { ElementType } from 'react'
 import { gsap } from 'gsap'
 import useScrollReveal from '../../hooks/useScrollReveal'
 
 export interface ScrollRevealProps extends React.HTMLAttributes<HTMLDivElement> {
-  as?: keyof JSX.IntrinsicElements
+  as?: ElementType
   delay?: number
   once?: boolean
 }
@@ -61,4 +62,3 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
 }
 
 export default ScrollReveal
-
