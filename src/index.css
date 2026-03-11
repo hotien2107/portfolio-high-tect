@@ -21,9 +21,24 @@
   :root {
     --bg-color: #05070f;
     --bg-color-soft: #0b1020;
+    --bg-gradient-end: #090714;
     --text-color: #d8e8ff;
     --surface-color: rgba(10, 16, 35, 0.72);
     --text-secondary-color: rgba(168, 190, 223, 0.85);
+    --text-muted-color: rgba(195, 214, 245, 0.66);
+    --panel-bg: linear-gradient(145deg, rgba(18, 31, 56, 0.66), rgba(8, 14, 30, 0.86));
+    --panel-border: color-mix(in oklab, var(--primary-color) 42%, transparent);
+    --panel-inner-border: rgba(148, 190, 255, 0.12);
+    --panel-elevation: 0 14px 30px rgba(7, 16, 36, 0.45);
+    --panel-glow: 0 0 38px rgba(41, 216, 255, 0.15);
+    --panel-hover-elevation: 0 18px 38px rgba(4, 10, 25, 0.48);
+    --panel-hover-glow: 0 0 44px rgba(155, 107, 255, 0.22);
+    --hud-surface: rgba(6, 11, 24, 0.32);
+    --input-surface: rgba(5, 10, 20, 0.24);
+    --image-overlay-start: #060b17;
+    --image-overlay-mid: #060b1710;
+    --grid-line: rgba(82, 119, 177, 0.09);
+    --scanline-color: rgba(136, 232, 255, 0.04);
     --primary-color: #28d8ff;
     --secondary-color: #9b6bff;
     --electric-purple: #9747ff;
@@ -35,16 +50,31 @@
   }
 
   :root[data-theme='light'] {
-    --bg-color: #edf4ff;
-    --bg-color-soft: #dbe8ff;
-    --text-color: #040b1f;
-    --surface-color: rgba(255, 255, 255, 0.66);
-    --text-secondary-color: rgba(33, 56, 90, 0.82);
-    --primary-color: #1366ff;
-    --secondary-color: #6f4bff;
-    --electric-purple: #6b4de8;
-    --neon-blue: #0e7dd8;
-    --scrollbar-track: #cfdff8;
+    --bg-color: #f7fbff;
+    --bg-color-soft: #ebf3ff;
+    --bg-gradient-end: #eef2ff;
+    --text-color: #15233b;
+    --text-secondary-color: #334b68;
+    --text-muted-color: #5d738f;
+    --surface-color: rgba(255, 255, 255, 0.82);
+    --panel-bg: linear-gradient(150deg, rgba(255, 255, 255, 0.92), rgba(237, 244, 255, 0.86));
+    --panel-border: rgba(92, 125, 173, 0.34);
+    --panel-inner-border: rgba(255, 255, 255, 0.6);
+    --panel-elevation: 0 16px 36px rgba(119, 149, 196, 0.22);
+    --panel-glow: 0 0 28px rgba(77, 146, 255, 0.16);
+    --panel-hover-elevation: 0 20px 42px rgba(108, 137, 183, 0.28);
+    --panel-hover-glow: 0 0 36px rgba(118, 84, 255, 0.2);
+    --hud-surface: rgba(226, 236, 252, 0.74);
+    --input-surface: rgba(240, 246, 255, 0.95);
+    --image-overlay-start: rgba(214, 227, 252, 0.85);
+    --image-overlay-mid: rgba(214, 227, 252, 0.05);
+    --grid-line: rgba(131, 160, 206, 0.2);
+    --scanline-color: rgba(69, 151, 255, 0.06);
+    --primary-color: #1c6dff;
+    --secondary-color: #7656ea;
+    --electric-purple: #7451dd;
+    --neon-blue: #1f87dc;
+    --scrollbar-track: #d7e5fb;
   }
 
   body {
@@ -55,7 +85,7 @@
       radial-gradient(circle at 8% 20%, rgba(56, 219, 255, 0.15), transparent 35%),
       radial-gradient(circle at 72% 12%, rgba(136, 85, 255, 0.16), transparent 40%),
       radial-gradient(circle at 50% 100%, rgba(28, 196, 170, 0.12), transparent 44%),
-      linear-gradient(160deg, var(--bg-color), var(--bg-color-soft) 55%, #090714 100%);
+      linear-gradient(160deg, var(--bg-color), var(--bg-color-soft) 58%, var(--bg-gradient-end) 100%);
     background-repeat: no-repeat;
     background-attachment: fixed;
     color: var(--text-color);
@@ -68,8 +98,8 @@
     inset: 0;
     pointer-events: none;
     background-image:
-      linear-gradient(rgba(82, 119, 177, 0.09) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(82, 119, 177, 0.09) 1px, transparent 1px);
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
     background-size: 48px 48px;
     mix-blend-mode: screen;
     opacity: 0.2;
@@ -85,7 +115,7 @@
     background: repeating-linear-gradient(
       to bottom,
       rgba(136, 232, 255, 0) 0px,
-      rgba(136, 232, 255, 0.04) 1px,
+      var(--scanline-color) 1px,
       rgba(136, 232, 255, 0) 3px
     );
     mix-blend-mode: screen;
@@ -119,18 +149,18 @@
     letter-spacing: 0.28em;
     text-transform: uppercase;
     font-size: 10px;
-    color: color-mix(in oklab, var(--primary-color) 70%, white 25%);
+    color: color-mix(in oklab, var(--primary-color) 70%, var(--text-color) 30%);
   }
 
   .cockpit-panel {
     position: relative;
-    border: 1px solid color-mix(in oklab, var(--primary-color) 42%, transparent);
-    background: linear-gradient(145deg, rgba(18, 31, 56, 0.66), rgba(8, 14, 30, 0.86));
+    border: 1px solid var(--panel-border);
+    background: var(--panel-bg);
     backdrop-filter: blur(16px);
     box-shadow:
       inset 0 0 0 1px rgba(255, 255, 255, 0.04),
-      0 14px 30px rgba(7, 16, 36, 0.45),
-      0 0 38px rgba(41, 216, 255, 0.15);
+      var(--panel-elevation),
+      var(--panel-glow);
     transition: transform 0.5s ease, box-shadow 0.45s ease, border-color 0.45s ease;
   }
 
@@ -138,7 +168,7 @@
     content: '';
     position: absolute;
     inset: 10px;
-    border: 1px solid rgba(148, 190, 255, 0.12);
+    border: 1px solid var(--panel-inner-border);
     pointer-events: none;
     border-radius: inherit;
   }
@@ -147,8 +177,8 @@
     border-color: color-mix(in oklab, var(--secondary-color) 70%, transparent);
     box-shadow:
       inset 0 0 0 1px rgba(255, 255, 255, 0.07),
-      0 18px 38px rgba(4, 10, 25, 0.48),
-      0 0 44px rgba(155, 107, 255, 0.22);
+      var(--panel-hover-elevation),
+      var(--panel-hover-glow);
     transform: translate3d(0, -4px, 0);
   }
 
@@ -198,6 +228,21 @@
     width: 0;
     border-right: 2px solid color-mix(in oklab, var(--primary-color) 80%, white 10%);
     animation: terminal-type 2.8s steps(26) forwards, cursor-blink 1s steps(1) infinite;
+  }
+
+  .hud-surface {
+    background: var(--hud-surface);
+    border: 1px solid color-mix(in oklab, var(--text-color) 16%, transparent);
+  }
+
+  .input-surface {
+    background: var(--input-surface);
+    border: 1px solid color-mix(in oklab, var(--text-color) 18%, transparent);
+    color: var(--text-color);
+  }
+
+  .input-surface::placeholder {
+    color: var(--text-muted-color);
   }
 }
 

@@ -60,7 +60,7 @@ const Hero: React.FC = () => {
 
           <a
             href="#contact"
-            className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-foreground/80 transition hover:border-[--secondary-color] hover:text-[--secondary-color]"
+            className="inline-flex items-center gap-2 rounded-full border border-[color:color-mix(in_oklab,var(--text-color)_22%,transparent)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-foreground/80 transition hover:border-[--secondary-color] hover:text-[--secondary-color]"
           >
             Start Transmission
           </a>
@@ -88,7 +88,7 @@ const Hero: React.FC = () => {
         style={{ transform: `perspective(1100px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` }}
       >
         <div className="absolute -left-6 -top-6 h-16 w-16 rounded-full border border-[--secondary-color]/40" />
-        <div className="scanlines relative overflow-hidden rounded-2xl border border-white/10 bg-black/40 p-6">
+        <div className="scanlines relative overflow-hidden rounded-2xl border border-[color:color-mix(in_oklab,var(--text-color)_16%,transparent)] bg-[var(--hud-surface)] p-6">
           <div className="mb-6 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-foreground/50">
             <span>Neural Operator</span>
             <span>UTC+7</span>
