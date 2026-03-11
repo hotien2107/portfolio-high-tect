@@ -1,10 +1,14 @@
 import type React from 'react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, Github, Linkedin, Radar } from 'lucide-react'
+import useDeviceProfile from '../../hooks/useDeviceProfile'
 
 const Hero: React.FC = () => {
   const panelRef = useRef<HTMLDivElement | null>(null)
   const [tilt, setTilt] = useState({ x: 0, y: 0 })
+  const rafRef = useRef<number | null>(null)
+  const nextTiltRef = useRef({ x: 0, y: 0 })
+  const { isTouch, tier } = useDeviceProfile()
 
   const handleMove: React.PointerEventHandler<HTMLDivElement> = (event) => {
     const panel = panelRef.current
@@ -14,11 +18,21 @@ const Hero: React.FC = () => {
     const px = (event.clientX - bounds.left) / bounds.width
     const py = (event.clientY - bounds.top) / bounds.height
 
-    setTilt({
-      x: (0.5 - py) * 8,
-      y: (px - 0.5) * 9,
+    nextTiltRef.current = {
+      x: (0.5 - py) * (tier === 'desktop' ? 8 : 5),
+      y: (px - 0.5) * (tier === 'desktop' ? 9 : 6),
+    }
+
+    if (rafRef.current) return
+    rafRef.current = window.requestAnimationFrame(() => {
+      setTilt(nextTiltRef.current)
+      rafRef.current = null
     })
   }
+
+  useEffect(() => () => {
+    if (rafRef.current) window.cancelAnimationFrame(rafRef.current)
+  }, [])
 
   return (
     <div className="grid items-center gap-10 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
@@ -68,7 +82,7 @@ const Hero: React.FC = () => {
 
       <div
         ref={panelRef}
-        onPointerMove={handleMove}
+        onPointerMove={isTouch ? undefined : handleMove}
         onPointerLeave={() => setTilt({ x: 0, y: 0 })}
         className="cockpit-panel holo-card relative rounded-[30px] p-5 transition-transform duration-400"
         style={{ transform: `perspective(1100px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` }}

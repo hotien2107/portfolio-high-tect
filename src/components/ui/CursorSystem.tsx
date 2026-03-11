@@ -1,5 +1,6 @@
 import { type ComponentType, useEffect, useMemo, useRef, useState } from 'react'
 import { CircleDot, Hand, LocateFixed, Rocket, Sparkles, Undo2, Wand2 } from 'lucide-react'
+import useDeviceProfile from '../../hooks/useDeviceProfile'
 
 type CursorMode = 'aurora' | 'rocket' | 'energy' | 'gesture' | 'dot' | 'comet'
 type TrailPoint = { x: number; y: number; life: number }
@@ -14,10 +15,8 @@ const modes: { id: CursorMode; label: string; icon: ComponentType<{ className?: 
 ]
 
 const CursorSystem = () => {
-  const shouldDisableHeavyCursor = useMemo(
-    () => window.matchMedia('(pointer: coarse), (prefers-reduced-motion: reduce)').matches,
-    [],
-  )
+  const { isTouch, reducedMotion, tier } = useDeviceProfile()
+  const shouldDisableHeavyCursor = isTouch || reducedMotion
 
   const [mode, setMode] = useState<CursorMode>('aurora')
   const [enabled, setEnabled] = useState(!shouldDisableHeavyCursor)
@@ -28,19 +27,26 @@ const CursorSystem = () => {
   const positionRef = useRef(position)
   const trailRef = useRef<TrailPoint[]>([])
   const rafRef = useRef<number | null>(null)
+  const frameRef = useRef(0)
   const activeMagneticRef = useRef<HTMLElement | null>(null)
 
-  useEffect(() => {
-    document.body.classList.toggle('cursor-hidden', enabled)
-    return () => document.body.classList.remove('cursor-hidden')
-  }, [enabled])
+  const isActive = enabled && !shouldDisableHeavyCursor
 
   useEffect(() => {
-    if (!enabled) return
+    document.body.classList.toggle('cursor-hidden', isActive)
+    return () => document.body.classList.remove('cursor-hidden')
+  }, [isActive])
+
+  useEffect(() => {
+    if (!isActive) return
 
     const onMove = (event: PointerEvent) => {
       positionRef.current = { x: event.clientX, y: event.clientY }
-      trailRef.current = [{ x: event.clientX, y: event.clientY, life: 1 }, ...trailRef.current].slice(0, 8)
+      if (frameRef.current % (tier === 'desktop' ? 1 : 2) === 0) {
+        const maxTrail = tier === 'desktop' ? 7 : 4
+        trailRef.current = [{ x: event.clientX, y: event.clientY, life: 1 }, ...trailRef.current].slice(0, maxTrail)
+      }
+      frameRef.current += 1
 
       const magneticEl = (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-magnetic]') ?? null
       if (activeMagneticRef.current && activeMagneticRef.current !== magneticEl) {
@@ -72,10 +78,10 @@ const CursorSystem = () => {
         rafRef.current = null
       }
     }
-  }, [enabled])
+  }, [isActive, tier])
 
   useEffect(() => {
-    if (!enabled) return
+    if (!isActive) return
 
     let frameId = 0
     let lastFrame = performance.now()
@@ -84,9 +90,10 @@ const CursorSystem = () => {
       const delta = Math.min((time - lastFrame) / 16.6, 2)
       lastFrame = time
 
-      trailRef.current = trailRef.current
-        .map((point) => ({ ...point, life: point.life - 0.07 * delta }))
-        .filter((point) => point.life > 0)
+      trailRef.current = trailRef.current.map((point) => ({
+        ...point,
+        life: point.life - (tier === 'desktop' ? 0.07 : 0.12) * delta,
+      })).filter((point) => point.life > 0)
 
       setTrail(trailRef.current)
       frameId = window.requestAnimationFrame(decay)
@@ -94,9 +101,11 @@ const CursorSystem = () => {
 
     frameId = window.requestAnimationFrame(decay)
     return () => window.cancelAnimationFrame(frameId)
-  }, [enabled])
+  }, [isActive, tier])
 
   const ActiveIcon = useMemo(() => modes.find((item) => item.id === mode)?.icon ?? Sparkles, [mode])
+
+  if (shouldDisableHeavyCursor) return null
 
   if (!enabled)
     return (
@@ -108,9 +117,9 @@ const CursorSystem = () => {
   return (
     <>
       <div className={`custom-cursor custom-cursor--${mode}`} style={{ left: position.x, top: position.y }}><ActiveIcon className="h-4 w-4" /></div>
-      {(mode === 'aurora' || mode === 'comet') && <div className="pointer-events-none fixed inset-0 z-[70]">{trail.map((point, index) => <span key={`${point.x}-${point.y}-${index}`} className={`cursor-trail ${mode === 'comet' ? 'cursor-trail--comet' : ''}`} style={{ left: point.x, top: point.y, opacity: point.life, transform: `scale(${0.2 + point.life * 0.9})` }} />)}</div>}
+      {(mode === 'aurora' || mode === 'comet') && !isTouch && <div className="pointer-events-none fixed inset-0 z-[70]">{trail.map((point, index) => <span key={`${point.x}-${point.y}-${index}`} className={`cursor-trail ${mode === 'comet' ? 'cursor-trail--comet' : ''}`} style={{ left: point.x, top: point.y, opacity: point.life, transform: `scale(${0.2 + point.life * 0.9})` }} />)}</div>}
 
-      <div className="cockpit-panel fixed bottom-5 right-5 z-50 w-64 rounded-2xl p-3">
+      <div className="cockpit-panel fixed bottom-5 right-5 z-50 hidden w-64 rounded-2xl p-3 md:block">
         <div className="mb-2 flex items-center justify-between"><p className="hud-label">Cursor Control</p><button onClick={() => setPanelOpen((p) => !p)} className="text-xs uppercase tracking-[0.14em] text-[--color-primary]">{panelOpen ? 'Hide' : 'Show'}</button></div>
         {panelOpen && <div className="space-y-2">{modes.map((item) => { const Icon = item.icon; return <button key={item.id} onClick={() => setMode(item.id)} className={`flex w-full items-center justify-between rounded-lg border px-2 py-1.5 text-xs ${mode === item.id ? 'border-[--color-primary] bg-[--color-primary]/20' : 'border-white/15 hover:border-[--color-primary]/55'}`}><span>{item.label}</span><Icon className="h-4 w-4" /></button> })}<div className="flex gap-2"><button onClick={() => setEnabled(false)} className="flex-1 rounded-lg border border-white/20 px-2 py-1 text-[10px] uppercase">Toggle</button><button onClick={() => setMode('aurora')} className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-white/20 px-2 py-1 text-[10px] uppercase"><Undo2 className="h-3 w-3" />Reset</button></div></div>}
       </div>

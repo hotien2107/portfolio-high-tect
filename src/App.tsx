@@ -27,7 +27,7 @@ const HomePage = () => {
   useSystemScrollAnimations()
 
   return (
-  <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-24 px-4 pb-16 pt-32 md:px-8 lg:pt-32">
+  <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-14 px-4 pb-12 pt-28 sm:gap-16 md:gap-20 md:px-8 lg:pt-32">
     <section id="hero" className="scroll-module">
       <Hero />
     </section>

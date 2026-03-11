@@ -369,3 +369,64 @@
   0%,100% { filter: brightness(1); }
   50% { filter: brightness(1.45); }
 }
+
+@media (max-width: 1024px) {
+  .cockpit-panel {
+    backdrop-filter: blur(10px);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+      0 10px 20px rgba(7, 16, 36, 0.35),
+      0 0 24px rgba(41, 216, 255, 0.1);
+  }
+
+  .aurora-layer {
+    filter: blur(8px);
+  }
+}
+
+@media (max-width: 768px) {
+  body::before,
+  body::after,
+  .holographic-particles {
+    opacity: 0.12;
+  }
+
+  .cockpit-panel:hover {
+    transform: none;
+  }
+
+  .hud-label {
+    letter-spacing: 0.2em;
+    font-size: 9px;
+  }
+
+  .aurora-flow {
+    animation-duration: 28s;
+  }
+
+  .meteor {
+    box-shadow: 0 0 12px rgba(94, 231, 255, 0.45);
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .holo-card:hover::after {
+    opacity: 0;
+  }
+
+  .scanlines::after,
+  .radar-mini::after {
+    animation-duration: 4.8s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
