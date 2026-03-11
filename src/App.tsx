@@ -8,6 +8,9 @@ import Projects from './components/sections/Projects'
 import BlogSection from './components/sections/Blog'
 import Testimonials from './components/sections/Testimonials'
 import Contact from './components/sections/Contact'
+import SystemDataPanel from './components/sections/SystemDataPanel'
+import CursorSystem from './components/ui/CursorSystem'
+import BootSequence from './components/ui/BootSequence'
 import ThreeBackground from './components/backgrounds/ThreeBackground'
 import DynamicBackgroundSystem from './components/backgrounds/DynamicBackgroundSystem'
 import useSystemScrollAnimations from './hooks/useSystemScrollAnimations'
@@ -41,6 +44,10 @@ const HomePage = () => {
       <Projects />
     </section>
 
+    <section id="system-data" className="scroll-module">
+      <SystemDataPanel />
+    </section>
+
     <section id="blog" className="scroll-module">
       <BlogSection />
     </section>
@@ -61,6 +68,8 @@ const App = () => {
     <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)]">
       <ThreeBackground />
       <DynamicBackgroundSystem />
+      <BootSequence />
+      <CursorSystem />
 
       <div className="relative z-10 flex min-h-screen flex-col aurora-flow">
         <Navbar />
