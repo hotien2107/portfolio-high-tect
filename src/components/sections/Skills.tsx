@@ -1,6 +1,38 @@
 import type React from 'react'
+import { useEffect, useRef } from 'react'
+import { gsap } from 'gsap'
 import { skillCategories } from '../../data/skills'
 import ScrollReveal from '../animations/ScrollReveal'
+import useScrollReveal from '../../hooks/useScrollReveal'
+
+const SkillBar = ({ name, level }: { name: string; level: string }) => {
+  const ref = useRef<HTMLDivElement | null>(null)
+  const visible = useScrollReveal(ref as React.RefObject<HTMLElement>, { once: true })
+
+  useEffect(() => {
+    if (!visible || !ref.current) return
+    gsap.fromTo(
+      ref.current,
+      { scaleX: 0, opacity: 0.3 },
+      { scaleX: 1, opacity: 1, duration: 1.1, ease: 'power3.out' },
+    )
+  }, [visible])
+
+  return (
+    <li>
+      <div className="mb-1 flex items-center justify-between text-foreground/80">
+        <span>{name}</span>
+        <span className="font-tech text-[10px] text-[--secondary-color]">{level}</span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+        <div
+          ref={ref}
+          className="h-full origin-left rounded-full bg-gradient-to-r from-[--color-primary] via-[#4ce9ff] to-[--secondary-color]"
+        />
+      </div>
+    </li>
+  )
+}
 
 const Skills: React.FC = () => {
   return (
@@ -16,20 +48,12 @@ const Skills: React.FC = () => {
       <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_280px]">
         <div className="grid gap-5 md:grid-cols-2">
           {skillCategories.map((category, index) => (
-            <ScrollReveal key={category.id} delay={index * 80} className="cockpit-panel rounded-2xl p-5 scanlines">
+            <ScrollReveal key={category.id} delay={index * 80} className="cockpit-panel holo-card rounded-2xl p-5 scanlines">
               <h3 className="font-tech text-sm text-[--color-primary]">{category.title}</h3>
               <p className="mt-2 text-xs text-[color:var(--text-secondary-color)]">{category.description}</p>
               <ul className="mt-4 space-y-3 text-xs">
                 {category.skills.map((skill) => (
-                  <li key={skill.name}>
-                    <div className="mb-1 flex items-center justify-between text-foreground/80">
-                      <span>{skill.name}</span>
-                      <span className="font-tech text-[10px] text-[--secondary-color]">{skill.level}</span>
-                    </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
-                      <div className="h-full w-4/5 rounded-full bg-gradient-to-r from-[--color-primary] via-[#4ce9ff] to-[--secondary-color]" />
-                    </div>
-                  </li>
+                  <SkillBar key={skill.name} name={skill.name} level={skill.level} />
                 ))}
               </ul>
             </ScrollReveal>

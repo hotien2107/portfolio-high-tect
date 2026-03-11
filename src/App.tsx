@@ -9,6 +9,8 @@ import BlogSection from './components/sections/Blog'
 import Testimonials from './components/sections/Testimonials'
 import Contact from './components/sections/Contact'
 import ThreeBackground from './components/backgrounds/ThreeBackground'
+import DynamicBackgroundSystem from './components/backgrounds/DynamicBackgroundSystem'
+import useSystemScrollAnimations from './hooks/useSystemScrollAnimations'
 import BlogList from './pages/BlogList'
 import BlogDetail from './pages/BlogDetail'
 import AboutPage from './pages/AboutPage'
@@ -18,44 +20,49 @@ import ProjectsPage from './pages/ProjectsPage'
 import TestimonialsPage from './pages/TestimonialsPage'
 import ContactPage from './pages/ContactPage'
 
-const HomePage = () => (
+const HomePage = () => {
+  useSystemScrollAnimations()
+
+  return (
   <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-24 px-4 pb-16 pt-32 md:px-8 lg:pt-32">
-    <section id="hero">
+    <section id="hero" className="scroll-module">
       <Hero />
     </section>
 
-    <section id="timeline">
+    <section id="timeline" className="scroll-module">
       <Timeline />
     </section>
 
-    <section id="skills">
+    <section id="skills" className="scroll-module">
       <Skills />
     </section>
 
-    <section id="projects">
+    <section id="projects" className="scroll-module">
       <Projects />
     </section>
 
-    <section id="blog">
+    <section id="blog" className="scroll-module">
       <BlogSection />
     </section>
 
-    <section id="testimonials">
+    <section id="testimonials" className="scroll-module">
       <Testimonials />
     </section>
 
-    <section id="contact">
+    <section id="contact" className="scroll-module">
       <Contact />
     </section>
   </main>
-)
+  )
+}
 
 const App = () => {
   return (
     <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)]">
       <ThreeBackground />
+      <DynamicBackgroundSystem />
 
-      <div className="relative z-10 flex min-h-screen flex-col">
+      <div className="relative z-10 flex min-h-screen flex-col aurora-flow">
         <Navbar />
 
         <Routes>
