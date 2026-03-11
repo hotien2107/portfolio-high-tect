@@ -6,15 +6,10 @@ const Projects: React.FC = () => {
   return (
     <section className="space-y-8">
       <div className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[--color-primary]">
-          Dự án
-        </p>
-        <h2 className="text-xl font-semibold md:text-2xl">
-          Một vài dự án tiêu biểu
-        </h2>
+        <p className="hud-label">Subsystem · Project Modules</p>
+        <h2 className="font-tech text-xl md:text-2xl">Mission-ready Engineering Pods</h2>
         <p className="max-w-2xl text-sm text-[color:var(--text-secondary-color)]">
-          Dưới đây là những dự án mình đã thực hiện hoặc tham gia, tập trung vào sản phẩm thực tế
-          và những bài toán cụ thể.
+          Mỗi dự án được trình bày như một module kỹ thuật: có hệ thống, có chỉ số và có mục tiêu vận hành rõ ràng.
         </p>
       </div>
 
@@ -23,36 +18,28 @@ const Projects: React.FC = () => {
           <ScrollReveal
             key={project.id}
             delay={index * 120}
-            className="group flex flex-col overflow-hidden rounded-2xl border border-foreground/10 bg-gradient-to-b from-white/5 via-black/60 to-black/90"
+            className="cockpit-panel group flex flex-col overflow-hidden rounded-2xl transition hover:shadow-[0_0_35px_rgba(151,71,255,0.28)]"
           >
-            <div className="relative h-40 w-full overflow-hidden bg-background/60">
+            <div className="relative h-44 w-full overflow-hidden bg-background/60">
               <img
                 src={project.image}
                 alt={project.name}
-                className="h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-[1.03] group-hover:opacity-100"
+                className="h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-[1.05]"
               />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-              <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[10px] text-foreground/70">
-                <span className="rounded-full bg-background/60 px-3 py-1 uppercase tracking-[0.18em]">
-                  {project.techStack.join(' · ')}
-                </span>
-              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#060b17] via-[#060b1710] to-transparent" />
+              <span className="hud-label absolute left-4 top-4 rounded-full border border-white/20 bg-black/45 px-2 py-1">
+                MODULE_{project.id}
+              </span>
             </div>
 
             <div className="flex flex-1 flex-col gap-3 p-5">
-              <h3 className="text-sm font-semibold">
-                {project.name}
-              </h3>
-              <p className="text-xs text-[color:var(--text-secondary-color)]">
-                {project.description}
+              <h3 className="font-tech text-sm text-[--color-primary]">{project.name}</h3>
+              <p className="text-xs text-[color:var(--text-secondary-color)]">{project.description}</p>
+              <p className="text-[11px] text-[--secondary-color]">
+                <span className="font-semibold">Highlight //</span> {project.highlight}
               </p>
-              <p className="text-xs text-[--color-primary]">
-                <span className="font-semibold">Điểm nổi bật: </span>
-                {project.highlight}
-              </p>
-              <p className="mt-auto text-[11px] text-foreground/50">
-                <span className="font-semibold text-foreground/70">Vai trò: </span>
-                {project.role}
+              <p className="mt-auto text-[11px] text-foreground/55">
+                <span className="font-semibold text-foreground/75">Role:</span> {project.role}
               </p>
             </div>
           </ScrollReveal>
@@ -63,4 +50,3 @@ const Projects: React.FC = () => {
 }
 
 export default Projects
-
